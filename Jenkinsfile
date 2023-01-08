@@ -1,7 +1,7 @@
 pipline{
     agent any
     stages {
-        stage('build app'){
+        stage('Build app'){
             steps{
                 script{
                     echo "Building the application.."
@@ -15,7 +15,7 @@ pipline{
                 }
             }
         }
-        stage('deploy'){
+        stage('Deploy'){
             steps{
                 script{
                     echo "Deploying docker image.."
