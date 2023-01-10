@@ -19,6 +19,7 @@ pipeline{
             steps{
                 script{
                     echo "Deploying docker image.."
+                    sh 'kubectl get nodes'
                 }
             }
         }
