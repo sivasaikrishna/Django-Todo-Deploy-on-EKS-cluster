@@ -25,6 +25,7 @@ pipeline{
                     echo "Deploying docker image.."
                     sh 'kubectl get nodes'
                     sh 'kubectl get svc'
+                    sh 'kubectl create deployment nginx-deployment --image=nginx'
                 }
             }
         }
