@@ -1,33 +1,45 @@
 pipeline{
     agent any
-    stages {
-        stage('Build app'){
+    environment{
+        DOCKER_SERVER = "073047198118.dkr.ecr.ap-south-1.amazonaws.com"
+        DOCKER_REPO = "073047198118.dkr.ecr.ap-south-1.amazonaws.com/django-todo"
+        IMAGE_NAME = "${DOCKER_REPO}:${BUILD_NUMBER}"
+    }
+    stages{
+        stage("Docker build & push"){
             steps{
                 script{
-                    echo "Building the application.."
+                    echo "build & Push the image on dockerhub.!!"
+                    sh "docker build -t ${env.IMAGE_NAME} ."
+                    withCredentials([usernamePassword(credentialsId: 'ECR_Credentials',passwordVariable: 'PWD',usernameVariable: 'USER')]){
+                    sh "docker login -u ${env.USER} -p ${env.PWD} ${env.DOCKER_SERVER}"
+                    sh "docker push ${env.IMAGE_NAME}"
+                    }   
                 }
             }
         }
-        stage('Build image'){
+        stage("Cleaning up docker images"){
             steps{
                 script{
-                    echo "Building the docker image.."
+                    sh "docker images"
+                    sh "docker rmi -f ${IMAGE_NAME}"
+                    sh "docker images"  
                 }
             }
         }
-        stage('Deploy'){
-            // environment {
-            //     AWS_ACCESS_KEY_ID = credentials('jenkins_aws_access_key_id')
-            //     AWS_SECRET_ACCESS_KEY = credentials('jenkins_aws_secret_access_key')
-            // }
+        stage("Deploy image"){
+            environment {
+                APP_NAME = 'django-todo'
+            }
             steps{
                 script{
-                    echo "Deploying docker image.."
-                    sh 'kubectl get nodes'
-                    sh 'kubectl get svc'
-                    sh 'kubectl apply -f https://k8s.io/examples/application/deployment.yaml'
+                    echo 'Deploying docker image...'
+                    sh 'envsubst < kubernetes/deployment.yaml | kubectl apply -f -'  
+                    sh 'envsubst < kubernetes/service.yaml | kubectl apply -f -'
                 }
             }
         }
     }
 }
+
+// envsubst --> apt install gettext-base (package which includes envsubst tool)
