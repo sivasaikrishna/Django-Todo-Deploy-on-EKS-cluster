@@ -24,6 +24,7 @@ pipeline{
                 script{
                     echo "Deploying docker image.."
                     sh 'kubectl get nodes'
+                    sh 'kubectl get svc'
                 }
             }
         }
